@@ -25,11 +25,10 @@ class LinusBox:
         r = self.recv_all(10, self.cmd_prompt, 1)
         self.cmd_prompt = r.strip().split('\n')[-1]
 
-    def command(self, command):
-        self._terminal.send(command + '; echo {0}\n'.format(self._sep))
-        s = self.recv_all(contains=self._sep)
-        s = '\n'.join(s.split('\n')[1:])    # Drop the command.
-        s, c = s.split(self._sep)
+    def command(self, command, timeout=0):
+        self._terminal.send(command + '; \\\necho {0}\n'.format(self._sep))
+        s = self.recv_all(contains=self._sep, timeout=timeout)
+        p, s, c = s.split(self._sep)
         self.cmd_prompt = c.strip()
         return s.strip()
 
@@ -43,6 +42,7 @@ class LinusBox:
                 time.sleep(interval)
                 t += interval
                 if timeout and t > timeout:
+                    print(r)
                     raise TimeoutError
             first = False
             r += self._terminal.recv(1000).decode('utf-8')

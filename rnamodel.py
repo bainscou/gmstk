@@ -1,7 +1,6 @@
 __author__ = 'Alex H Wagner'
 
 from model import GMSModel
-import re
 from biotk.rnaseq import RNASeq as RNAdf
 import pandas
 
@@ -12,19 +11,11 @@ class RNAModel(GMSModel):
         super().__init__(*args, **kwargs)
         self.gms_type = 'rna-seq'
         self.data = None
-
-    @staticmethod
-    def show_values():
-        v = {'id': 'id',
-             'last_build_id': 'last_succeeded_build.id',
-             'last_build_dir': 'last_succeeded_build.data_directory',
-             'subject_common_name': 'subject.common_name',
-             'individual_common_name': 'individual_common_name'}
-        return v
-
-    def update(self):
-        super().update()
-        r = re.compile(r'-G\s+(\S+\.gtf)', re.IGNORECASE)
+        self.show_values =  {'id': 'id',
+                             'last_build_id': 'last_succeeded_build.id',
+                             'last_build_dir': 'last_succeeded_build.data_directory',
+                             'subject_common_name': 'subject.common_name',
+                             'individual_common_name': 'individual_common_name'}
 
     def load_gene_expr(self, df=None, range_dict=None):
         if df is None:
