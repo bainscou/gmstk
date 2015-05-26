@@ -1,10 +1,10 @@
 __author__ = 'Alex H Wagner'
 
-import linusbox
+from gmstk.linusbox import *
 
 class GMSModel:
 
-    linus = linusbox.LinusBox()
+    linus = LinusBox()
     linus.connect()
 
     def __init__(self, model_id, **kwargs):

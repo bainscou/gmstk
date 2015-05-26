@@ -1,6 +1,6 @@
 __author__ = 'Alex H Wagner'
 
-from model import GMSModel
+from gmstk.model import GMSModel
 from biotk.rnaseq import RNASeq as RNAdf
 import pandas
 

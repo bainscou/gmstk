@@ -1,6 +1,6 @@
 __author__ = 'Alex H Wagner'
 
-from model import GMSModel, GMSModelGroup
+from gmstk.model import GMSModel, GMSModelGroup
 
 class ClinSeqModel(GMSModel):
 
