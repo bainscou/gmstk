@@ -2,8 +2,6 @@ __author__ = 'Alex H Wagner'
 
 from gmstk.model import GMSModel
 from biotk.rnaseq import RNASeq as RNAdf
-import pandas
-import os
 
 
 class RNAModel(GMSModel):
@@ -16,7 +14,8 @@ class RNAModel(GMSModel):
                              'last_build_id': 'last_succeeded_build.id',
                              'last_build_dir': 'last_succeeded_build.data_directory',
                              'subject_common_name': 'subject.common_name',
-                             'individual_common_name': 'individual_common_name'}
+                             'individual_common_name': 'individual_common_name',
+                             'extraction_label': 'subject.extraction_label'}
 
     def load_gene_expr(self, df=None, range_dict=None):
         # Get rl
