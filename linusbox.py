@@ -3,7 +3,7 @@ import paramiko
 import time
 
 KNOWN_HOSTS = "/Users/awagner/.ssh/known_hosts"
-
+# Consider rewriting this with the fabric module once it is compatible with 3.x
 
 class LinusBox:
 

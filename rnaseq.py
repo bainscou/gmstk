@@ -3,6 +3,7 @@ __author__ = 'Alex H Wagner'
 from gmstk.model import GMSModel
 from biotk.rnaseq import RNASeq as RNAdf
 import pandas
+import os
 
 
 class RNAModel(GMSModel):
@@ -18,17 +19,17 @@ class RNAModel(GMSModel):
                              'individual_common_name': 'individual_common_name'}
 
     def load_gene_expr(self, df=None, range_dict=None):
-        if df is None:
-            with self.linus.open(self.last_build_dir + '/expression/genes.fpkm_tracking') as f:
-                df = pandas.read_csv(f, sep="\t")
-                df = df[['tracking_id', 'FPKM']]
-                df.columns = ['id', 'FPKM']
-                df.set_index('id')
-        if range_dict:
-            self.data = RNAdf(fpkm_df=df, range_dict=range_dict)
-        else:
-            with self.linus.open(self.last_build_dir + '/expression/transcripts.gtf') as f:
-                self.data = RNAdf(fpkm_df=df, trx_gtf=f)
+        # Get rl
+        r = self.linus.command('ls {0}*ReadLengthSummary.tsv'.format(self.last_build_dir + '/bam-qc/'))
+        with self.linus.open(r) as f:
+            for line in f:
+                a = line.split()
+                if a[0] == 'Reads':
+                    rl = a[4]
+        with self.linus.open(self.last_build_dir + '/expression/genes.fpkm_tracking') as fpkm:
+            with self.linus.open(self.last_build_dir + '/expression/transcripts.gtf') as gtf:
+                self.data = RNAdf(fpkm_tracking_file=fpkm, trx_gtf_file=gtf, fpkm_df=df,
+                                  range_dict=range_dict, read_length=rl)
 
 
 if __name__ == '__main__':
