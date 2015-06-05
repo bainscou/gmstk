@@ -1,7 +1,7 @@
 __author__ = 'Alex H Wagner'
 import paramiko
 import time
-from config import *
+from .config import *
 
 
 KNOWN_HOSTS = HOME + "/.ssh/known_hosts"
