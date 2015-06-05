@@ -1,11 +1,13 @@
 __author__ = 'Alex H Wagner'
 import paramiko
 import time
+import warnings
 from .config import *
 
 
 KNOWN_HOSTS = HOME + "/.ssh/known_hosts"
 # Consider rewriting this with the fabric module once it is compatible with 3.x
+
 
 class LinusBox:
 
@@ -24,8 +26,22 @@ class LinusBox:
         self._client.connect(self.name, username=self.user, port=self.port)
         self._sftp_client = self._client.open_sftp()
         self._terminal = self._client.invoke_shell()
-        r = self.recv_all(10, self.cmd_prompt, 1)
-        self.cmd_prompt = r.strip().split('\n')[-1]
+        try:
+            r = self.recv_all(timeout=5, contains=self.cmd_prompt, count=1)
+        except TimeoutError as e:
+            s = str(e)
+            if s:
+                a = s.strip().split('~')
+                if len(a) > 1 and a[-1]:
+                    c = a[-1]
+                else:
+                    c = s.strip()[-1]
+                m = "\nCommand prompt doesn't contain '{0}'.\nConsider changing PROMPT to '{1}' in config.py." \
+                    "\nConnection successful.".format(self.cmd_prompt, c)
+                warnings.warn(m)
+                self.cmd_prompt = c
+            else:
+                raise TimeoutError('No response from virtual terminal. Check connection.')
 
     def command(self, command, timeout=0):
         self._terminal.send(command + '; \\\necho {0}\n'.format(self._sep))
@@ -44,10 +60,9 @@ class LinusBox:
                 time.sleep(interval)
                 t += interval
                 if timeout and t > timeout:
-                    print(r)
-                    raise TimeoutError
+                    raise TimeoutError(r)
             first = False
-            r += self._terminal.recv(1000).decode('utf-8')
+            r += self._terminal.recv(1000).decode('utf-8', 'ignore')
         return r
 
     def open(self, filename):
@@ -57,11 +72,3 @@ class LinusBox:
     def disconnect(self):
         self._sftp_client.close()
         self._client.close()
-
-
-if __name__ == '__main__':
-    l = LinusBox()
-    l.connect()
-    c = 'sleep 1 ; echo "Hello, world."'
-    s = l.command(c)
-    print(s)
