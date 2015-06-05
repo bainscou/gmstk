@@ -18,17 +18,10 @@ class RNAModel(GMSModel):
                              'extraction_label': 'subject.extraction_label'}
 
     def load_gene_expr(self, df=None, range_dict=None):
-        # Get rl
-        r = self.linus.command('ls {0}*ReadLengthSummary.tsv'.format(self.last_build_dir + '/bam-qc/'))
-        with self.linus.open(r) as f:
-            for line in f:
-                a = line.split()
-                if a[0] == 'Reads':
-                    rl = a[4]
         with self.linus.open(self.last_build_dir + '/expression/genes.fpkm_tracking') as fpkm:
             with self.linus.open(self.last_build_dir + '/expression/transcripts.gtf') as gtf:
                 self.data = RNAdf(fpkm_tracking_file=fpkm, trx_gtf_file=gtf, fpkm_df=df,
-                                  range_dict=range_dict, read_length=rl)
+                                  range_dict=range_dict)
 
 
 if __name__ == '__main__':
