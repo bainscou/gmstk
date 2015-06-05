@@ -1,13 +1,15 @@
 __author__ = 'Alex H Wagner'
 import paramiko
 import time
+from config import *
 
-KNOWN_HOSTS = "/Users/awagner/.ssh/known_hosts"
+
+KNOWN_HOSTS = HOME + "/.ssh/known_hosts"
 # Consider rewriting this with the fabric module once it is compatible with 3.x
 
 class LinusBox:
 
-    def __init__(self, name='linus202', user='awagner', port=22):
+    def __init__(self, name=LINUSNAME, user=USER, port=22):
         self.name = name
         self.user = user
         self.port = port
