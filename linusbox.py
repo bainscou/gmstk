@@ -17,7 +17,7 @@ class LinusBox:
         self._client.get_host_keys().load(KNOWN_HOSTS)
         self._sftp_client = None
         self._terminal = None
-        self.cmd_prompt = '$ '
+        self.cmd_prompt = PROMPT
         self._sep = '===ENDLINUS==='
 
     def connect(self):
