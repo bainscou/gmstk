@@ -84,21 +84,49 @@ class LinusBox:
         remote_file = self._sftp_client.open(filename)
         return remote_file
 
-    def ftp_get(self, remote, local, use_cwd=True):
-        if use_cwd:
+    def ftp_get(self, remote, local=None, update_cwd=True, recursive=False):
+        if local is None:
+            p = Path(remote)
+            local = p.name
+        if update_cwd:
             r = self.pwd()
             pwd = r.stdout[0]
             self._sftp_client.chdir(pwd)
-        self._sftp_client.get(remote, local)
+        if recursive:
+            # Check if remote is a directory
+            i = self._sftp_client.stat(remote).st_mode // 2**15
+            if i == 0:
+                # make local directory
+                p = Path(remote)
+                os.mkdir(p.name)
+                os.chdir(p.name)
+                # get contents of remote directory
+                dir_list = self._sftp_client.listdir(remote)
+                # call ftp_get on each file/directory found (exclude ./ and ../)
+                for d in dir_list:
+                    self.ftp_get('/'.join([remote, d]), d)
+                os.chdir('..')
+            elif i == 1:
+                self._sftp_client.get(remote, local)
+            else:
+                raise ValueError
 
-    def ftp_put(self, local, remote=None, use_cwd=True):
+    def ftp_put(self, local, remote=None, update_cwd=True, recursive=False):
         if remote is None:
             p = Path(local)
             remote = p.name
-        if use_cwd:
+        if update_cwd:
             r = self.pwd()
             pwd = r.stdout[0]
             self._sftp_client.chdir(pwd)
+        if recursive:
+            # Check if local is a directory
+            os.
+            # if so:
+                # make remote directory
+                # get contents of local directory
+                # call ftp_put on each file/directory found (exclude ./ and ../)
+                # return (so that if local is NOT a directory, remaining logic is executed)
         self._sftp_client.put(local, remote)
 
     def ls(self, *args, **kwargs):
