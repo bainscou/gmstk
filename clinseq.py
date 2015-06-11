@@ -18,7 +18,6 @@ class ClinSeqModel(GMSModel):
 
 
 class ClinSeqModelGroup(ClinSeqModel, GMSModelGroup):
-
     pass
 
 if __name__ == '__main__':

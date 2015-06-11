@@ -30,8 +30,8 @@ class GMSModel:
             c += ' --show {0}'.format(v_call)
         r = self.linus.command(c, timeout=15)
         if raw:
-            return(r)
-        d = dict(zip(keys, r.split()))
+            return r
+        d = dict(zip(keys, r.stdout[0].split()))
         self.set_attr_from_dict(d)
 
     def set_attr_from_dict(self, d):
@@ -51,9 +51,9 @@ class GMSModelGroup(GMSModel):
         """raw=False processes attributes extracted from call response. raw=True returns the call response instead."""
         r = super().update(raw=True)
         if raw:
-            return(r)
+            return r
         keys = sorted(self.show_values)
-        for line in r.split('\n'):
+        for line in r.stdout:
             d = dict(zip(keys, line.split()))
             d = {k: v for k, v in d.items() if v != '<NULL>'}
             primary_parent_class = self.__class__.__bases__[0]

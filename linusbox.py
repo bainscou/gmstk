@@ -51,9 +51,10 @@ class LinusBox:
             else:
                 raise TimeoutError('No response from virtual terminal. Check connection.')
 
-    def command(self, command, timeout=5):
+    def command(self, command, timeout=5, verbose=False):
         """Returns list of stdout lines and list of stderr lines"""
-        print(command)
+        if verbose:
+            print('Executing remote command:', command)
         self._terminal.send(command + '; \\\necho {0}\n'.format(self._sep))
         r = self.recv_all(contains=self._sep, timeout=timeout)
         s = r.stdout
@@ -97,11 +98,11 @@ class LinusBox:
             remote = r.stdout[0] + '/' + remote
         self._scp_client.put(local, remote, recursive, preserve_times)
 
-    def ls(self, *args):
-        return self.command(' '.join(['ls', '-1'] + [str(x) for x in args]))
+    def ls(self, *args, **kwargs):
+        return self.command(' '.join(['ls', '-1'] + [str(x) for x in args]), **kwargs)
 
     def __getattr__(self, item):
-        return lambda *args: self.command(' '.join([item] + [str(x) for x in args]))
+        return lambda *args, **kwargs: self.command(' '.join([item] + [str(x) for x in args]), **kwargs)
 
     def disconnect(self):
         self._sftp_client.close()
