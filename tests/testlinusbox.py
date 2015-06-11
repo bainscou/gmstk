@@ -1,6 +1,7 @@
 __author__ = 'Alex H Wagner'
 
 from gmstk.linusbox import *
+import os
 
 def enquote(string):
     return "'" + string + "'"
@@ -19,6 +20,7 @@ class TestLinusBox:
         cls.linus.cd()
         cls.linus.rm('-rf', enquote(cls.test_dir))
         cls.linus.disconnect()
+        os.remove('test2.txt')
 
     def a_mkdir_test(self):
         # make a test dir
@@ -39,8 +41,12 @@ class TestLinusBox:
         assert 'test.txt' in r.stdout, 'r is {0}'.format(r.stdout)
 
     def d_scp_get_test(self):
-        pass
-        # copy the test file
+        # copy the test file to local
+        self.linus.scp_get('test.txt', 'test2.txt')
+        assert os.path.isfile('test2.txt')
 
     def e_scp_put_test(self):
-        pass
+        #
+        self.linus.scp_put('test2.txt')
+        r = self.linus.ls()
+        assert 'test2.txt' in r.stdout, 'r is {0}'.format(r.stdout)
