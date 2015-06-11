@@ -42,11 +42,11 @@ class TestLinusBox:
 
     def d_ftp_get_test(self):
         # copy the test file to local
-        self.linus.scp_get('test.txt', 'test2.txt')
+        self.linus.ftp_get('test.txt', 'test2.txt')
         assert os.path.isfile('test2.txt')
 
     def e_ftp_put_test(self):
         #
-        self.linus.scp_put('test2.txt')
+        self.linus.ftp_put('test2.txt')
         r = self.linus.ls()
         assert 'test2.txt' in r.stdout, 'r is {0}'.format(r.stdout)

@@ -3,6 +3,7 @@ __author__ = 'Alex H Wagner'
 import paramiko
 import time
 import warnings
+from pathlib import Path
 from gmstk.config import *
 
 
@@ -90,8 +91,10 @@ class LinusBox:
             self._sftp_client.chdir(pwd)
         self._sftp_client.get(remote, local)
 
-    def ftp_put(self, local, remote, use_cwd=True):
-        # If remote is None
+    def ftp_put(self, local, remote=None, use_cwd=True):
+        if remote is None:
+            p = Path(local)
+            remote = p.name
         if use_cwd:
             r = self.pwd()
             pwd = r.stdout[0]
