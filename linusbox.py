@@ -3,7 +3,6 @@ __author__ = 'Alex H Wagner'
 import paramiko
 import time
 import warnings
-import scp
 from gmstk.config import *
 
 
@@ -23,7 +22,6 @@ class LinusBox:
         self._port = port
         self._client = paramiko.SSHClient()
         self._client.get_host_keys().load(KNOWN_HOSTS)
-        self._scp_client = None
         self._sftp_client = None
         self._terminal = None
         self._cmd_prompt = PROMPT
@@ -33,7 +31,6 @@ class LinusBox:
         self._client.connect(self._name, username=self._user, port=self._port)
         self._sftp_client = self._client.open_sftp()
         self._terminal = self._client.invoke_shell()
-        self._scp_client = scp.SCPClient(self._client.get_transport())
         try:
             self.recv_all(timeout=5, contains=self._cmd_prompt, count=1)
         except TimeoutError as e:
@@ -86,17 +83,20 @@ class LinusBox:
         remote_file = self._sftp_client.open(filename)
         return remote_file
 
-    def scp_get(self, remote, local, recursive=False, preserve_times=False, use_cwd=True):
+    def ftp_get(self, remote, local, use_cwd=True):
         if use_cwd:
             r = self.pwd()
-            remote = r.stdout[0] + '/' + remote
-        self._scp_client.get(remote, local, recursive, preserve_times)
+            pwd = r.stdout[0]
+            self._sftp_client.chdir(pwd)
+        self._sftp_client.get(remote, local)
 
-    def scp_put(self, local, remote='.', recursive=False, preserve_times=False, use_cwd=True):
+    def ftp_put(self, local, remote, use_cwd=True):
+        # If remote is None
         if use_cwd:
             r = self.pwd()
-            remote = r.stdout[0] + '/' + remote
-        self._scp_client.put(local, remote, recursive, preserve_times)
+            pwd = r.stdout[0]
+            self._sftp_client.chdir(pwd)
+        self._sftp_client.put(local, remote)
 
     def ls(self, *args, **kwargs):
         return self.command(' '.join(['ls', '-1'] + [str(x) for x in args]), **kwargs)
