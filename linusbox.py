@@ -88,49 +88,63 @@ class LinusBox:
         if local is None:
             p = Path(remote)
             local = p.name
+        local = local.rstrip('/')
+        remote = remote.rstrip('/')
         if update_cwd:
             r = self.pwd()
             pwd = r.stdout[0]
             self._sftp_client.chdir(pwd)
         if recursive:
             # Check if remote is a directory
-            i = self._sftp_client.stat(remote).st_mode // 2**15
-            if i == 0:
+            if not self._sftp_client.stat(remote).st_mode // 2**15:
                 # make local directory
-                p = Path(remote)
-                os.mkdir(p.name)
-                os.chdir(p.name)
+                try:
+                    os.mkdir(local)
+                except FileExistsError:
+                    pass
+                os.chdir(local)
                 # get contents of remote directory
                 dir_list = self._sftp_client.listdir(remote)
                 # call ftp_get on each file/directory found (exclude ./ and ../)
                 for d in dir_list:
-                    self.ftp_get('/'.join([remote, d]), d)
+                    self.ftp_get('/'.join([remote, d]), d, update_cwd=False)
                 os.chdir('..')
-            elif i == 1:
-                self._sftp_client.get(remote, local)
-            else:
-                raise ValueError
+                return
+        self._sftp_client.get(remote, local)
 
     def ftp_put(self, local, remote=None, update_cwd=True, recursive=False):
         if remote is None:
             p = Path(local)
             remote = p.name
+        local = local.rstrip('/')
+        remote = remote.rstrip('/')
         if update_cwd:
             r = self.pwd()
             pwd = r.stdout[0]
             self._sftp_client.chdir(pwd)
         if recursive:
             # Check if local is a directory
-            os.
-            # if so:
+            if not os.stat(local).st_mode // 2**15:
                 # make remote directory
+                # self._sftp_client.mkdir(remote) # This doesn't appear to work correctly.
+                cwd = self._sftp_client.getcwd()
+                if cwd is None:
+                    cwd = self.echo('$HOME')
+                self.mkdir('/'.join([cwd, remote]))
+                self._sftp_client.chdir(remote)
                 # get contents of local directory
+                dir_list = os.listdir(local)
                 # call ftp_put on each file/directory found (exclude ./ and ../)
-                # return (so that if local is NOT a directory, remaining logic is executed)
+                for d in dir_list:
+                    self.ftp_put('/'.join([local, d]), d, update_cwd=False)
+                self._sftp_client.chdir('..')
+                return
         self._sftp_client.put(local, remote)
 
     def ls(self, *args, **kwargs):
-        return self.command(' '.join(['ls', '-1'] + [str(x) for x in args]), **kwargs)
+        r = self.command(' '.join(['ls', '-1'] + [str(x) for x in args]), **kwargs)
+        r.stdout = [x.rstrip('/') for x in r.stdout if x not in ['./', '../']]
+        return r
 
     def __getattr__(self, item):
         return lambda *args, **kwargs: self.command(' '.join([item] + [str(x) for x in args]), **kwargs)
