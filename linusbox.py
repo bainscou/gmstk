@@ -33,11 +33,13 @@ class LinusBox:
         self._sftp_client = self._client.open_sftp()
         self._terminal = self._client.invoke_shell()
         try:
-            self.recv_all(timeout=5, contains=self._cmd_prompt, count=1)
+            r = self.recv_all(timeout=5, contains=self._cmd_prompt, count=1)
+            print(r.stdout)
+            self._cmd_prompt = r.stdout.strip()[-1]
         except TimeoutError as e:
             s = str(e)
             if s:
-                a = s.strip().split('~')
+                a = s.strip().split(self._cmd_prompt)
                 if len(a) > 1 and a[-1]:
                     c = a[-1]
                 else:
@@ -56,8 +58,12 @@ class LinusBox:
         self._terminal.send(command + '; \\\necho {0}\n'.format(self._sep))
         r = self.recv_all(contains=self._sep, timeout=timeout)
         s = r.stdout
-        p, s, c = s.split(self._sep)
-        self._cmd_prompt = c.strip()
+        try:
+            p, s, c = s.split(self._sep)
+        except ValueError:
+            raise ValueError('s is {0}'.format(s))
+        if not c.endswith(self._sep):
+            r = self.recv_all(contains=self._cmd_prompt, timeout=timeout, count=1)
         r.stdout = s.strip().splitlines()
         r.stderr = r.stderr.strip().splitlines()
         return r
