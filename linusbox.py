@@ -10,6 +10,7 @@ from gmstk.config import *
 KNOWN_HOSTS = HOME + "/.ssh/known_hosts"
 # Consider rewriting this with the fabric module once it is compatible with 3.x
 
+
 class Bunch:
     def __init__(self, **kwds):
         self.__dict__.update(kwds)
@@ -86,7 +87,11 @@ class LinusBox:
                 e += self._terminal.recv_stderr(1000).decode('utf-8', 'ignore')
         return Bunch(stdout=r, stderr=e)
 
-    def open(self, filename):
+    def open(self, filename, update_cwd=True):
+        if update_cwd:
+            r = self.pwd()
+            pwd = r.stdout[0]
+            self._sftp_client.chdir(pwd)
         remote_file = self._sftp_client.open(filename)
         return remote_file
 
@@ -108,13 +113,14 @@ class LinusBox:
                     os.mkdir(local)
                 except FileExistsError:
                     pass
+                start = os.getcwd()
                 os.chdir(local)
                 # get contents of remote directory
                 dir_list = self._sftp_client.listdir(remote)
                 # call ftp_get on each file/directory found (exclude ./ and ../)
                 for d in dir_list:
                     self.ftp_get('/'.join([remote, d]), d, update_cwd=False)
-                os.chdir('..')
+                os.chdir(start)
                 return
         self._sftp_client.get(remote, local)
 
@@ -143,7 +149,7 @@ class LinusBox:
                 # call ftp_put on each file/directory found (exclude ./ and ../)
                 for d in dir_list:
                     self.ftp_put('/'.join([local, d]), d, update_cwd=False)
-                self._sftp_client.chdir('..')
+                self._sftp_client.chdir(cwd)
                 return
         self._sftp_client.put(local, remote)
 
