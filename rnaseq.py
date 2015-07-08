@@ -10,12 +10,12 @@ class RNAModel(GMSModel):
         super().__init__(*args, **kwargs)
         self.gms_type = 'rna-seq'
         self.data = None
-        self.show_values =  {'id': 'id',
-                             'last_build_id': 'last_succeeded_build.id',
-                             'last_build_dir': 'last_succeeded_build.data_directory',
-                             'subject_common_name': 'subject.common_name',
-                             'individual_common_name': 'individual_common_name',
-                             'extraction_label': 'subject.extraction_label'}
+        self.show_values = {'id': 'id',
+                            'last_build_id': 'last_succeeded_build.id',
+                            'last_build_dir': 'last_succeeded_build.data_directory',
+                            'subject_common_name': 'subject.common_name',
+                            'individual_common_name': 'individual_common_name',
+                            'extraction_label': 'subject.extraction_label'}
 
     def load_gene_expr(self, df=None, range_dict=None):
         with self.linus.open(self.last_build_dir + '/expression/genes.fpkm_tracking') as fpkm:
