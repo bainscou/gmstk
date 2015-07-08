@@ -40,6 +40,9 @@ class GMSModel:
                 continue
             setattr(self, k, d[k])
 
+    def attributes(self):
+        return [x for x in dir(self) if x not in dir(self.__class__)]
+
 
 class GMSModelGroup(GMSModel):
 
