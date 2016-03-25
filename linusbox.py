@@ -30,6 +30,8 @@ class LinusBox:
         self._sep = '===ENDLINUS==='
 
     def connect(self):
+        # grab passphrase from keychain for encrypted ssh keys on OSX
+        self._client.load_system_host_keys()
         self._client.connect(self._name, username=self._user, port=self._port)
         self._sftp_client = self._client.open_sftp()
         self._terminal = self._client.invoke_shell()
